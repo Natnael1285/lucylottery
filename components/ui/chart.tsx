@@ -119,14 +119,22 @@ function ChartStyle({ id, config }: ChartStyleProps) {
 // Tooltip Components
 const ChartTooltip = RechartsPrimitive.Tooltip
 
+type TooltipPropsWithoutContent = Omit<
+  React.ComponentProps<typeof RechartsPrimitive.Tooltip>,
+  'content'
+>
+
 interface ChartTooltipContentProps
-  extends React.ComponentProps<typeof RechartsPrimitive.Tooltip>,
+  extends TooltipPropsWithoutContent,
     React.ComponentProps<'div'> {
   hideLabel?: boolean
   hideIndicator?: boolean
+  payload?: any[] // Add this line to fix the error
+
   indicator?: 'line' | 'dot' | 'dashed'
   nameKey?: string
   labelKey?: string
+  label?: any
 }
 
 function ChartTooltipContent({
