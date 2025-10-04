@@ -1,114 +1,97 @@
-"use client"
+// components/daily-lottery.tsx
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Trophy, Settings, History, Users, TrendingUp } from "lucide-react"
-import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { History, Settings, TrendingUp, Trophy, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-const participants = [
-  {
-    id: 1,
-    username: "user_1234",
-    lotteryNumber: "112233445566",
-    purchaseTime: "2025-09-29 08:15:23",
-    ticketPrice: "10 ETB",
-  },
-  {
-    id: 2,
-    username: "user_5678",
-    lotteryNumber: "223344556677",
-    purchaseTime: "2025-09-29 09:22:45",
-    ticketPrice: "10 ETB",
-  },
-  {
-    id: 3,
-    username: "user_9012",
-    lotteryNumber: "334455667788",
-    purchaseTime: "2025-09-29 10:33:12",
-    ticketPrice: "10 ETB",
-  },
-  {
-    id: 4,
-    username: "user_3456",
-    lotteryNumber: "445566778899",
-    purchaseTime: "2025-09-29 11:45:38",
-    ticketPrice: "10 ETB",
-  },
-  {
-    id: 5,
-    username: "user_7890",
-    lotteryNumber: "556677889900",
-    purchaseTime: "2025-09-29 12:52:19",
-    ticketPrice: "10 ETB",
-  },
-]
+interface Participant {
+  id: number;
+  username: string;
+  lotteryNumber: string;
+  purchaseTime: string;
+  ticketPrice: string;
+}
 
-const winners = [
-  {
-    position: "1st Place",
-    username: "user_8521",
-    lotteryNumber: "667788990011",
-    prize: "30,000 ETB",
-    date: "2025-09-29",
-  },
-  {
-    position: "2nd Place",
-    username: "user_4932",
-    lotteryNumber: "778899001122",
-    prize: "18,000 ETB",
-    date: "2025-09-29",
-  },
-  {
-    position: "3rd Place",
-    username: "user_6341",
-    lotteryNumber: "889900112233",
-    prize: "12,000 ETB",
-    date: "2025-09-29",
-  },
-]
+interface Winner {
+  position: string;
+  username: string;
+  lotteryNumber: string;
+  prize: string;
+  date: string;
+}
 
-const drawHistory = [
-  {
-    date: "2025-09-28",
-    winner1: "user_2341 (28,000 ETB)",
-    winner2: "user_6785 (16,800 ETB)",
-    winner3: "user_9023 (11,200 ETB)",
-    totalPool: "56,000 ETB",
-    participants: 5600,
-  },
-  {
-    date: "2025-09-27",
-    winner1: "user_4562 (32,000 ETB)",
-    winner2: "user_8906 (19,200 ETB)",
-    winner3: "user_1234 (12,800 ETB)",
-    totalPool: "64,000 ETB",
-    participants: 6400,
-  },
-  {
-    date: "2025-09-26",
-    winner1: "user_7783 (25,000 ETB)",
-    winner2: "user_0127 (15,000 ETB)",
-    winner3: "user_5468 (10,000 ETB)",
-    totalPool: "50,000 ETB",
-    participants: 5000,
-  },
-]
+interface DrawHistory {
+  date: string;
+  winner1: string;
+  winner2: string;
+  winner3: string;
+  totalPool: string;
+  participants: number;
+}
 
-const salesData = [
-  { date: "Mon", tickets: 4200, revenue: 42000 },
-  { date: "Tue", tickets: 4800, revenue: 48000 },
-  { date: "Wed", tickets: 5100, revenue: 51000 },
-  { date: "Thu", tickets: 5600, revenue: 56000 },
-  { date: "Fri", tickets: 6200, revenue: 62000 },
-  { date: "Sat", tickets: 7100, revenue: 71000 },
-  { date: "Sun", tickets: 6800, revenue: 68000 },
-]
+interface SalesData {
+  date: string;
+  tickets: number;
+  revenue: number;
+}
+
+interface Analytics {
+  totalTickets: number;
+  ticketGrowth: number;
+  totalParticipants: number;
+  participantGrowth: number;
+  totalRevenue: number;
+  revenueGrowth: number;
+}
+
+interface Settings {
+  ticketPrice: string;
+  govCut: string;
+  prize1: string;
+  prize2: string;
+  prize3: string;
+}
+
+interface ApiResponse {
+  participants: Participant[];
+  winners: Winner[];
+  drawHistory: DrawHistory[];
+  analytics: Analytics;
+  salesData: SalesData[];
+  settings: Settings;
+}
 
 const chartConfig = {
   tickets: {
@@ -119,19 +102,108 @@ const chartConfig = {
     label: "Revenue (ETB)",
     color: "hsl(var(--chart-2))",
   },
-}
+};
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export function DailyLottery() {
-  const [ticketPrice, setTicketPrice] = useState("10")
-  const [govCut, setGovCut] = useState("15")
-  const [prize1, setPrize1] = useState("50")
-  const [prize2, setPrize2] = useState("30")
-  const [prize3, setPrize3] = useState("20")
+  const [data, setData] = useState<ApiResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [ticketPrice, setTicketPrice] = useState("10");
+  const [govCut, setGovCut] = useState("15");
+  const [prize1, setPrize1] = useState("50");
+  const [prize2, setPrize2] = useState("30");
+  const [prize3, setPrize3] = useState("20");
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/lucy/daily-lottery`);
+      const result = await response.json();
+      setData(result);
+
+      // Initialize form values with current settings
+      if (result.settings) {
+        setTicketPrice(result.settings.ticketPrice);
+        setGovCut(result.settings.govCut);
+        setPrize1(result.settings.prize1);
+        setPrize2(result.settings.prize2);
+        setPrize3(result.settings.prize3);
+      }
+    } catch (error) {
+      console.error("Error fetching daily lottery data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/lucy/daily-lottery`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ticketPrice,
+          govCut,
+          prize1,
+          prize2,
+          prize3,
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh data to get updated settings
+        fetchData();
+        alert("Settings saved successfully!");
+      } else {
+        alert("Failed to save settings");
+      }
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      alert("Error saving settings");
+    }
+  };
+
+  if (loading && !data) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            Daily Lottery
+          </h2>
+          <p className="text-muted-foreground">Loading daily lottery data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            Daily Lottery
+          </h2>
+          <p className="text-muted-foreground">
+            Failed to load daily lottery data
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">Daily Lottery</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">
+          Daily Lottery
+        </h2>
         <p className="text-muted-foreground">Daily draw with 3 winners</p>
       </div>
 
@@ -163,7 +235,9 @@ export function DailyLottery() {
           <Card>
             <CardHeader>
               <CardTitle>Today's Participants</CardTitle>
-              <CardDescription>Users who purchased daily lottery tickets</CardDescription>
+              <CardDescription>
+                Users who purchased daily lottery tickets
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border">
@@ -177,12 +251,20 @@ export function DailyLottery() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {participants.map((participant) => (
+                    {data.participants.map((participant) => (
                       <TableRow key={participant.id}>
-                        <TableCell className="font-medium">{participant.username}</TableCell>
-                        <TableCell className="font-mono text-primary">{participant.lotteryNumber}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{participant.purchaseTime}</TableCell>
-                        <TableCell className="font-semibold">{participant.ticketPrice}</TableCell>
+                        <TableCell className="font-medium">
+                          {participant.username}
+                        </TableCell>
+                        <TableCell className="font-mono text-primary">
+                          {participant.lotteryNumber}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {participant.purchaseTime}
+                        </TableCell>
+                        <TableCell className="font-semibold">
+                          {participant.ticketPrice}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -196,11 +278,13 @@ export function DailyLottery() {
           <Card>
             <CardHeader>
               <CardTitle>Today's Winners</CardTitle>
-              <CardDescription>3 daily winners with prize breakdown</CardDescription>
+              <CardDescription>
+                3 daily winners with prize breakdown
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {winners.map((winner, index) => (
+                {data.winners.map((winner, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-card to-card/50"
@@ -211,21 +295,31 @@ export function DailyLottery() {
                           index === 0
                             ? "bg-primary/20 text-primary"
                             : index === 1
-                              ? "bg-secondary/20 text-secondary"
-                              : "bg-accent/20 text-accent"
+                            ? "bg-secondary/20 text-secondary"
+                            : "bg-accent/20 text-accent"
                         }`}
                       >
                         <Trophy className="h-6 w-6" />
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground">{winner.position}</p>
-                        <p className="text-sm text-muted-foreground">{winner.username}</p>
-                        <p className="text-xs font-mono text-muted-foreground">{winner.lotteryNumber}</p>
+                        <p className="font-semibold text-foreground">
+                          {winner.position}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {winner.username}
+                        </p>
+                        <p className="text-xs font-mono text-muted-foreground">
+                          {winner.lotteryNumber}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">{winner.prize}</p>
-                      <p className="text-xs text-muted-foreground">{winner.date}</p>
+                      <p className="text-2xl font-bold text-primary">
+                        {winner.prize}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {winner.date}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -239,7 +333,9 @@ export function DailyLottery() {
             <Card>
               <CardHeader>
                 <CardTitle>Ticket Configuration</CardTitle>
-                <CardDescription>Set ticket price and government cut</CardDescription>
+                <CardDescription>
+                  Set ticket price and government cut
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -262,14 +358,18 @@ export function DailyLottery() {
                     placeholder="15"
                   />
                 </div>
-                <Button className="w-full">Save Configuration</Button>
+                <Button className="w-full" onClick={handleSaveSettings}>
+                  Save Configuration
+                </Button>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle>Prize Pool Configuration</CardTitle>
-                <CardDescription>Configure prize distribution among 3 winners</CardDescription>
+                <CardDescription>
+                  Configure prize distribution among 3 winners
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -302,7 +402,9 @@ export function DailyLottery() {
                     placeholder="20"
                   />
                 </div>
-                <Button className="w-full">Save Prize Configuration</Button>
+                <Button className="w-full" onClick={handleSaveSettings}>
+                  Save Prize Configuration
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -315,9 +417,14 @@ export function DailyLottery() {
                 <CardTitle className="text-sm">Total Tickets Sold</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">39,900</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {data.analytics.totalTickets.toLocaleString()}
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-primary">+14.2%</span> from last week
+                  <span className="text-primary">
+                    +{data.analytics.ticketGrowth}%
+                  </span>{" "}
+                  from last week
                 </p>
               </CardContent>
             </Card>
@@ -326,9 +433,14 @@ export function DailyLottery() {
                 <CardTitle className="text-sm">Total Participants</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">6,200</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {data.analytics.totalParticipants.toLocaleString()}
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-primary">+12.8%</span> from last week
+                  <span className="text-primary">
+                    +{data.analytics.participantGrowth}%
+                  </span>{" "}
+                  from last week
                 </p>
               </CardContent>
             </Card>
@@ -337,9 +449,14 @@ export function DailyLottery() {
                 <CardTitle className="text-sm">Revenue Generated</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">399,000 ETB</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {Math.round(data.analytics.totalRevenue).toLocaleString()} ETB
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-primary">+14.2%</span> from last week
+                  <span className="text-primary">
+                    +{data.analytics.revenueGrowth}%
+                  </span>{" "}
+                  from last week
                 </p>
               </CardContent>
             </Card>
@@ -348,15 +465,27 @@ export function DailyLottery() {
           <Card>
             <CardHeader>
               <CardTitle>Ticket Sales Growth</CardTitle>
-              <CardDescription>Daily ticket sales and revenue for the last 7 days</CardDescription>
+              <CardDescription>
+                Daily ticket sales and revenue for the last 7 days
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ChartContainer config={chartConfig} className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={salesData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <LineChart data={data.salesData}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="hsl(var(--border))"
+                    />
+                    <XAxis
+                      dataKey="date"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <YAxis
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Line
                       type="monotone"
@@ -376,7 +505,9 @@ export function DailyLottery() {
           <Card>
             <CardHeader>
               <CardTitle>Draw History</CardTitle>
-              <CardDescription>Past daily draws with winners and prize splits</CardDescription>
+              <CardDescription>
+                Past daily draws with winners and prize splits
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border">
@@ -392,14 +523,26 @@ export function DailyLottery() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {drawHistory.map((draw, index) => (
+                    {data.drawHistory.map((draw, index) => (
                       <TableRow key={index}>
-                        <TableCell className="font-medium">{draw.date}</TableCell>
-                        <TableCell className="text-sm">{draw.winner1}</TableCell>
-                        <TableCell className="text-sm">{draw.winner2}</TableCell>
-                        <TableCell className="text-sm">{draw.winner3}</TableCell>
-                        <TableCell className="font-semibold text-primary">{draw.totalPool}</TableCell>
-                        <TableCell className="text-muted-foreground">{draw.participants}</TableCell>
+                        <TableCell className="font-medium">
+                          {draw.date}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {draw.winner1}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {draw.winner2}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {draw.winner3}
+                        </TableCell>
+                        <TableCell className="font-semibold text-primary">
+                          {draw.totalPool}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {draw.participants.toLocaleString()}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -410,5 +553,5 @@ export function DailyLottery() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

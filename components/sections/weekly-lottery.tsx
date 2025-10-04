@@ -1,111 +1,97 @@
-"use client"
+// components/weekly-lottery.tsx
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Trophy, Settings, History, Users, TrendingUp } from "lucide-react"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { History, Settings, TrendingUp, Trophy, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-const participants = [
-  {
-    id: 1,
-    username: "user_2341",
-    lotteryNumber: "998877665544",
-    purchaseTime: "2025-09-23 14:22:11",
-    ticketPrice: "50 ETB",
-  },
-  {
-    id: 2,
-    username: "user_6785",
-    lotteryNumber: "887766554433",
-    purchaseTime: "2025-09-24 16:45:32",
-    ticketPrice: "50 ETB",
-  },
-  {
-    id: 3,
-    username: "user_9023",
-    lotteryNumber: "776655443322",
-    purchaseTime: "2025-09-25 10:12:55",
-    ticketPrice: "50 ETB",
-  },
-  {
-    id: 4,
-    username: "user_4562",
-    lotteryNumber: "665544332211",
-    purchaseTime: "2025-09-26 18:33:47",
-    ticketPrice: "50 ETB",
-  },
-  {
-    id: 5,
-    username: "user_8906",
-    lotteryNumber: "554433221100",
-    purchaseTime: "2025-09-27 12:58:23",
-    ticketPrice: "50 ETB",
-  },
-]
+interface Participant {
+  id: number;
+  username: string;
+  lotteryNumber: string;
+  purchaseTime: string;
+  ticketPrice: string;
+}
 
-const winners = [
-  {
-    position: "1st Place",
-    username: "user_3421",
-    lotteryNumber: "443322110099",
-    prize: "150,000 ETB",
-    date: "2025-09-29",
-  },
-  {
-    position: "2nd Place",
-    username: "user_7865",
-    lotteryNumber: "332211009988",
-    prize: "90,000 ETB",
-    date: "2025-09-29",
-  },
-  {
-    position: "3rd Place",
-    username: "user_1209",
-    lotteryNumber: "221100998877",
-    prize: "60,000 ETB",
-    date: "2025-09-29",
-  },
-]
+interface Winner {
+  position: string;
+  username: string;
+  lotteryNumber: string;
+  prize: string;
+  date: string;
+}
 
-const drawHistory = [
-  {
-    date: "2025-09-22",
-    winner1: "user_5543 (140,000 ETB)",
-    winner2: "user_9887 (84,000 ETB)",
-    winner3: "user_2221 (56,000 ETB)",
-    totalPool: "280,000 ETB",
-    participants: 5600,
-  },
-  {
-    date: "2025-09-15",
-    winner1: "user_7765 (160,000 ETB)",
-    winner2: "user_3309 (96,000 ETB)",
-    winner3: "user_8881 (64,000 ETB)",
-    totalPool: "320,000 ETB",
-    participants: 6400,
-  },
-  {
-    date: "2025-09-08",
-    winner1: "user_1123 (125,000 ETB)",
-    winner2: "user_6667 (75,000 ETB)",
-    winner3: "user_4445 (50,000 ETB)",
-    totalPool: "250,000 ETB",
-    participants: 5000,
-  },
-]
+interface DrawHistory {
+  date: string;
+  winner1: string;
+  winner2: string;
+  winner3: string;
+  totalPool: string;
+  participants: number;
+}
 
-const salesData = [
-  { week: "Week 1", tickets: 4200, revenue: 210000 },
-  { week: "Week 2", tickets: 4800, revenue: 240000 },
-  { week: "Week 3", tickets: 5100, revenue: 255000 },
-  { week: "Week 4", tickets: 5600, revenue: 280000 },
-]
+interface SalesData {
+  week: string;
+  tickets: number;
+  revenue: number;
+}
+
+interface Analytics {
+  totalTickets: number;
+  ticketGrowth: number;
+  totalParticipants: number;
+  participantGrowth: number;
+  totalRevenue: number;
+  revenueGrowth: number;
+}
+
+interface SettingsData {
+  ticketPrice: string;
+  govCut: string;
+  prize1: string;
+  prize2: string;
+  prize3: string;
+}
+
+interface ApiResponse {
+  participants: Participant[];
+  winners: Winner[];
+  drawHistory: DrawHistory[];
+  analytics: Analytics;
+  salesData: SalesData[];
+  settings: SettingsData;
+}
 
 const chartConfig = {
   tickets: {
@@ -116,19 +102,110 @@ const chartConfig = {
     label: "Revenue (ETB)",
     color: "hsl(var(--chart-2))",
   },
-}
+};
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export function WeeklyLottery() {
-  const [ticketPrice, setTicketPrice] = useState("50")
-  const [govCut, setGovCut] = useState("15")
-  const [prize1, setPrize1] = useState("50")
-  const [prize2, setPrize2] = useState("30")
-  const [prize3, setPrize3] = useState("20")
+  const [data, setData] = useState<ApiResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [ticketPrice, setTicketPrice] = useState("50");
+  const [govCut, setGovCut] = useState("15");
+  const [prize1, setPrize1] = useState("50");
+  const [prize2, setPrize2] = useState("30");
+  const [prize3, setPrize3] = useState("20");
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/lucy/weekly-lottery`);
+      const result = await response.json();
+      setData(result);
+
+      // Initialize form values with current settings
+      if (result.settings) {
+        setTicketPrice(result.settings.ticketPrice);
+        setGovCut(result.settings.govCut);
+        setPrize1(result.settings.prize1);
+        setPrize2(result.settings.prize2);
+        setPrize3(result.settings.prize3);
+      }
+    } catch (error) {
+      console.error("Error fetching weekly lottery data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/lucy/weekly-lottery`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ticketPrice,
+          govCut,
+          prize1,
+          prize2,
+          prize3,
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh data to get updated settings
+        fetchData();
+        alert("Settings saved successfully!");
+      } else {
+        alert("Failed to save settings");
+      }
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      alert("Error saving settings");
+    }
+  };
+
+  if (loading && !data) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            Weekly Lottery
+          </h2>
+          <p className="text-muted-foreground">
+            Loading weekly lottery data...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            Weekly Lottery
+          </h2>
+          <p className="text-muted-foreground">
+            Failed to load weekly lottery data
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">Weekly Lottery</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">
+          Weekly Lottery
+        </h2>
         <p className="text-muted-foreground">Weekly draw with 3 winners</p>
       </div>
 
@@ -160,7 +237,9 @@ export function WeeklyLottery() {
           <Card>
             <CardHeader>
               <CardTitle>This Week's Participants</CardTitle>
-              <CardDescription>Users who purchased weekly lottery tickets</CardDescription>
+              <CardDescription>
+                Users who purchased weekly lottery tickets
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border">
@@ -174,12 +253,20 @@ export function WeeklyLottery() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {participants.map((participant) => (
+                    {data.participants.map((participant) => (
                       <TableRow key={participant.id}>
-                        <TableCell className="font-medium">{participant.username}</TableCell>
-                        <TableCell className="font-mono text-primary">{participant.lotteryNumber}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{participant.purchaseTime}</TableCell>
-                        <TableCell className="font-semibold">{participant.ticketPrice}</TableCell>
+                        <TableCell className="font-medium">
+                          {participant.username}
+                        </TableCell>
+                        <TableCell className="font-mono text-primary">
+                          {participant.lotteryNumber}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {participant.purchaseTime}
+                        </TableCell>
+                        <TableCell className="font-semibold">
+                          {participant.ticketPrice}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -193,11 +280,13 @@ export function WeeklyLottery() {
           <Card>
             <CardHeader>
               <CardTitle>This Week's Winners</CardTitle>
-              <CardDescription>3 weekly winners with prize breakdown</CardDescription>
+              <CardDescription>
+                3 weekly winners with prize breakdown
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {winners.map((winner, index) => (
+                {data.winners.map((winner, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-card to-card/50"
@@ -208,21 +297,31 @@ export function WeeklyLottery() {
                           index === 0
                             ? "bg-primary/20 text-primary"
                             : index === 1
-                              ? "bg-secondary/20 text-secondary"
-                              : "bg-accent/20 text-accent"
+                            ? "bg-secondary/20 text-secondary"
+                            : "bg-accent/20 text-accent"
                         }`}
                       >
                         <Trophy className="h-6 w-6" />
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground">{winner.position}</p>
-                        <p className="text-sm text-muted-foreground">{winner.username}</p>
-                        <p className="text-xs font-mono text-muted-foreground">{winner.lotteryNumber}</p>
+                        <p className="font-semibold text-foreground">
+                          {winner.position}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {winner.username}
+                        </p>
+                        <p className="text-xs font-mono text-muted-foreground">
+                          {winner.lotteryNumber}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">{winner.prize}</p>
-                      <p className="text-xs text-muted-foreground">{winner.date}</p>
+                      <p className="text-2xl font-bold text-primary">
+                        {winner.prize}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {winner.date}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -236,7 +335,9 @@ export function WeeklyLottery() {
             <Card>
               <CardHeader>
                 <CardTitle>Ticket Configuration</CardTitle>
-                <CardDescription>Set ticket price and government cut</CardDescription>
+                <CardDescription>
+                  Set ticket price and government cut
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -259,14 +360,18 @@ export function WeeklyLottery() {
                     placeholder="15"
                   />
                 </div>
-                <Button className="w-full">Save Configuration</Button>
+                <Button className="w-full" onClick={handleSaveSettings}>
+                  Save Configuration
+                </Button>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle>Prize Pool Configuration</CardTitle>
-                <CardDescription>Configure prize distribution among 3 winners</CardDescription>
+                <CardDescription>
+                  Configure prize distribution among 3 winners
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -299,7 +404,9 @@ export function WeeklyLottery() {
                     placeholder="20"
                   />
                 </div>
-                <Button className="w-full">Save Prize Configuration</Button>
+                <Button className="w-full" onClick={handleSaveSettings}>
+                  Save Prize Configuration
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -312,9 +419,14 @@ export function WeeklyLottery() {
                 <CardTitle className="text-sm">Total Tickets Sold</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">19,700</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {data.analytics.totalTickets.toLocaleString()}
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-primary">+16.7%</span> from last month
+                  <span className="text-primary">
+                    +{data.analytics.ticketGrowth}%
+                  </span>{" "}
+                  from last month
                 </p>
               </CardContent>
             </Card>
@@ -323,9 +435,14 @@ export function WeeklyLottery() {
                 <CardTitle className="text-sm">Total Participants</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">3,800</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {data.analytics.totalParticipants.toLocaleString()}
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-primary">+13.5%</span> from last month
+                  <span className="text-primary">
+                    +{data.analytics.participantGrowth}%
+                  </span>{" "}
+                  from last month
                 </p>
               </CardContent>
             </Card>
@@ -334,9 +451,14 @@ export function WeeklyLottery() {
                 <CardTitle className="text-sm">Revenue Generated</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">985,000 ETB</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {Math.round(data.analytics.totalRevenue).toLocaleString()} ETB
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-primary">+16.7%</span> from last month
+                  <span className="text-primary">
+                    +{data.analytics.revenueGrowth}%
+                  </span>{" "}
+                  from last month
                 </p>
               </CardContent>
             </Card>
@@ -345,17 +467,33 @@ export function WeeklyLottery() {
           <Card>
             <CardHeader>
               <CardTitle>Weekly Sales & Participant Growth</CardTitle>
-              <CardDescription>Ticket sales and revenue for the last 4 weeks</CardDescription>
+              <CardDescription>
+                Ticket sales and revenue for the last 4 weeks
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ChartContainer config={chartConfig} className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={salesData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <BarChart data={data.salesData}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="hsl(var(--border))"
+                    />
+                    <XAxis
+                      dataKey="week"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <YAxis
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="tickets" fill="hsl(var(--chart-3))" radius={[8, 8, 0, 0]} />
+                    <Bar
+                      dataKey="tickets"
+                      fill="hsl(var(--chart-3))"
+                      radius={[8, 8, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
@@ -367,7 +505,9 @@ export function WeeklyLottery() {
           <Card>
             <CardHeader>
               <CardTitle>Draw History</CardTitle>
-              <CardDescription>Past weekly draws with winners and prize splits</CardDescription>
+              <CardDescription>
+                Past weekly draws with winners and prize splits
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border">
@@ -383,14 +523,26 @@ export function WeeklyLottery() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {drawHistory.map((draw, index) => (
+                    {data.drawHistory.map((draw, index) => (
                       <TableRow key={index}>
-                        <TableCell className="font-medium">{draw.date}</TableCell>
-                        <TableCell className="text-sm">{draw.winner1}</TableCell>
-                        <TableCell className="text-sm">{draw.winner2}</TableCell>
-                        <TableCell className="text-sm">{draw.winner3}</TableCell>
-                        <TableCell className="font-semibold text-primary">{draw.totalPool}</TableCell>
-                        <TableCell className="text-muted-foreground">{draw.participants}</TableCell>
+                        <TableCell className="font-medium">
+                          {draw.date}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {draw.winner1}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {draw.winner2}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {draw.winner3}
+                        </TableCell>
+                        <TableCell className="font-semibold text-primary">
+                          {draw.totalPool}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {draw.participants.toLocaleString()}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -401,5 +553,5 @@ export function WeeklyLottery() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
