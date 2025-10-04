@@ -1,113 +1,97 @@
-"use client"
+// components/monthly-lottery.tsx
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Trophy, Settings, History, Users, TrendingUp } from "lucide-react"
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { History, Settings, TrendingUp, Trophy, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-const participants = [
-  {
-    id: 1,
-    username: "user_7721",
-    lotteryNumber: "111222333444",
-    purchaseTime: "2025-09-05 11:34:22",
-    ticketPrice: "100 ETB",
-  },
-  {
-    id: 2,
-    username: "user_3365",
-    lotteryNumber: "222333444555",
-    purchaseTime: "2025-09-12 15:47:18",
-    ticketPrice: "100 ETB",
-  },
-  {
-    id: 3,
-    username: "user_8809",
-    lotteryNumber: "333444555666",
-    purchaseTime: "2025-09-18 09:22:45",
-    ticketPrice: "100 ETB",
-  },
-  {
-    id: 4,
-    username: "user_1143",
-    lotteryNumber: "444555666777",
-    purchaseTime: "2025-09-23 17:55:33",
-    ticketPrice: "100 ETB",
-  },
-  {
-    id: 5,
-    username: "user_6687",
-    lotteryNumber: "555666777888",
-    purchaseTime: "2025-09-27 13:11:09",
-    ticketPrice: "100 ETB",
-  },
-]
+interface Participant {
+  id: number;
+  username: string;
+  lotteryNumber: string;
+  purchaseTime: string;
+  ticketPrice: string;
+}
 
-const winners = [
-  {
-    position: "1st Place",
-    username: "user_9921",
-    lotteryNumber: "666777888999",
-    prize: "500,000 ETB",
-    date: "2025-09-30",
-  },
-  {
-    position: "2nd Place",
-    username: "user_4465",
-    lotteryNumber: "777888999000",
-    prize: "300,000 ETB",
-    date: "2025-09-30",
-  },
-  {
-    position: "3rd Place",
-    username: "user_2209",
-    lotteryNumber: "888999000111",
-    prize: "200,000 ETB",
-    date: "2025-09-30",
-  },
-]
+interface Winner {
+  position: string;
+  username: string;
+  lotteryNumber: string;
+  prize: string;
+  date: string;
+}
 
-const drawHistory = [
-  {
-    date: "2025-08-31",
-    winner1: "user_5543 (480,000 ETB)",
-    winner2: "user_9887 (288,000 ETB)",
-    winner3: "user_2221 (192,000 ETB)",
-    totalPool: "960,000 ETB",
-    participants: 9600,
-  },
-  {
-    date: "2025-07-31",
-    winner1: "user_7765 (520,000 ETB)",
-    winner2: "user_3309 (312,000 ETB)",
-    winner3: "user_8881 (208,000 ETB)",
-    totalPool: "1,040,000 ETB",
-    participants: 10400,
-  },
-  {
-    date: "2025-06-30",
-    winner1: "user_1123 (450,000 ETB)",
-    winner2: "user_6667 (270,000 ETB)",
-    winner3: "user_4445 (180,000 ETB)",
-    totalPool: "900,000 ETB",
-    participants: 9000,
-  },
-]
+interface DrawHistory {
+  date: string;
+  winner1: string;
+  winner2: string;
+  winner3: string;
+  totalPool: string;
+  participants: number;
+}
 
-const salesData = [
-  { month: "Jan", tickets: 8200, revenue: 820000 },
-  { month: "Feb", tickets: 8800, revenue: 880000 },
-  { month: "Mar", tickets: 9100, revenue: 910000 },
-  { month: "Apr", tickets: 9600, revenue: 960000 },
-  { month: "May", tickets: 10200, revenue: 1020000 },
-  { month: "Jun", tickets: 9000, revenue: 900000 },
-]
+interface SalesData {
+  month: string;
+  tickets: number;
+  revenue: number;
+}
+
+interface Analytics {
+  totalTickets: number;
+  ticketGrowth: number;
+  totalParticipants: number;
+  participantGrowth: number;
+  totalRevenue: number;
+  revenueGrowth: number;
+}
+
+interface SettingsData {
+  ticketPrice: string;
+  govCut: string;
+  prize1: string;
+  prize2: string;
+  prize3: string;
+}
+
+interface ApiResponse {
+  participants: Participant[];
+  winners: Winner[];
+  drawHistory: DrawHistory[];
+  analytics: Analytics;
+  salesData: SalesData[];
+  settings: SettingsData;
+}
 
 const chartConfig = {
   tickets: {
@@ -118,19 +102,110 @@ const chartConfig = {
     label: "Revenue (ETB)",
     color: "hsl(var(--chart-2))",
   },
-}
+};
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export function MonthlyLottery() {
-  const [ticketPrice, setTicketPrice] = useState("100")
-  const [govCut, setGovCut] = useState("15")
-  const [prize1, setPrize1] = useState("50")
-  const [prize2, setPrize2] = useState("30")
-  const [prize3, setPrize3] = useState("20")
+  const [data, setData] = useState<ApiResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [ticketPrice, setTicketPrice] = useState("100");
+  const [govCut, setGovCut] = useState("15");
+  const [prize1, setPrize1] = useState("50");
+  const [prize2, setPrize2] = useState("30");
+  const [prize3, setPrize3] = useState("20");
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/lucy/monthly-lottery`);
+      const result = await response.json();
+      setData(result);
+
+      // Initialize form values with current settings
+      if (result.settings) {
+        setTicketPrice(result.settings.ticketPrice);
+        setGovCut(result.settings.govCut);
+        setPrize1(result.settings.prize1);
+        setPrize2(result.settings.prize2);
+        setPrize3(result.settings.prize3);
+      }
+    } catch (error) {
+      console.error("Error fetching monthly lottery data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/lucy/monthly-lottery`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ticketPrice,
+          govCut,
+          prize1,
+          prize2,
+          prize3,
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh data to get updated settings
+        fetchData();
+        alert("Settings saved successfully!");
+      } else {
+        alert("Failed to save settings");
+      }
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      alert("Error saving settings");
+    }
+  };
+
+  if (loading && !data) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            Monthly Lottery
+          </h2>
+          <p className="text-muted-foreground">
+            Loading monthly lottery data...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            Monthly Lottery
+          </h2>
+          <p className="text-muted-foreground">
+            Failed to load monthly lottery data
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">Monthly Lottery</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">
+          Monthly Lottery
+        </h2>
         <p className="text-muted-foreground">Monthly draw with 3 winners</p>
       </div>
 
@@ -162,7 +237,9 @@ export function MonthlyLottery() {
           <Card>
             <CardHeader>
               <CardTitle>This Month's Participants</CardTitle>
-              <CardDescription>Users who purchased monthly lottery tickets</CardDescription>
+              <CardDescription>
+                Users who purchased monthly lottery tickets
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border">
@@ -176,12 +253,20 @@ export function MonthlyLottery() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {participants.map((participant) => (
+                    {data.participants.map((participant) => (
                       <TableRow key={participant.id}>
-                        <TableCell className="font-medium">{participant.username}</TableCell>
-                        <TableCell className="font-mono text-primary">{participant.lotteryNumber}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{participant.purchaseTime}</TableCell>
-                        <TableCell className="font-semibold">{participant.ticketPrice}</TableCell>
+                        <TableCell className="font-medium">
+                          {participant.username}
+                        </TableCell>
+                        <TableCell className="font-mono text-primary">
+                          {participant.lotteryNumber}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {participant.purchaseTime}
+                        </TableCell>
+                        <TableCell className="font-semibold">
+                          {participant.ticketPrice}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -195,11 +280,13 @@ export function MonthlyLottery() {
           <Card>
             <CardHeader>
               <CardTitle>This Month's Winners</CardTitle>
-              <CardDescription>3 monthly winners with prize breakdown</CardDescription>
+              <CardDescription>
+                3 monthly winners with prize breakdown
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {winners.map((winner, index) => (
+                {data.winners.map((winner, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-card to-card/50"
@@ -210,21 +297,31 @@ export function MonthlyLottery() {
                           index === 0
                             ? "bg-primary/20 text-primary"
                             : index === 1
-                              ? "bg-secondary/20 text-secondary"
-                              : "bg-accent/20 text-accent"
+                            ? "bg-secondary/20 text-secondary"
+                            : "bg-accent/20 text-accent"
                         }`}
                       >
                         <Trophy className="h-6 w-6" />
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground">{winner.position}</p>
-                        <p className="text-sm text-muted-foreground">{winner.username}</p>
-                        <p className="text-xs font-mono text-muted-foreground">{winner.lotteryNumber}</p>
+                        <p className="font-semibold text-foreground">
+                          {winner.position}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {winner.username}
+                        </p>
+                        <p className="text-xs font-mono text-muted-foreground">
+                          {winner.lotteryNumber}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">{winner.prize}</p>
-                      <p className="text-xs text-muted-foreground">{winner.date}</p>
+                      <p className="text-2xl font-bold text-primary">
+                        {winner.prize}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {winner.date}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -238,7 +335,9 @@ export function MonthlyLottery() {
             <Card>
               <CardHeader>
                 <CardTitle>Ticket Configuration</CardTitle>
-                <CardDescription>Set ticket price and government cut</CardDescription>
+                <CardDescription>
+                  Set ticket price and government cut
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -261,14 +360,18 @@ export function MonthlyLottery() {
                     placeholder="15"
                   />
                 </div>
-                <Button className="w-full">Save Configuration</Button>
+                <Button className="w-full" onClick={handleSaveSettings}>
+                  Save Configuration
+                </Button>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle>Prize Pool Configuration</CardTitle>
-                <CardDescription>Configure prize distribution among 3 winners</CardDescription>
+                <CardDescription>
+                  Configure prize distribution among 3 winners
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -301,7 +404,9 @@ export function MonthlyLottery() {
                     placeholder="20"
                   />
                 </div>
-                <Button className="w-full">Save Prize Configuration</Button>
+                <Button className="w-full" onClick={handleSaveSettings}>
+                  Save Prize Configuration
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -314,9 +419,14 @@ export function MonthlyLottery() {
                 <CardTitle className="text-sm">Total Tickets Sold</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">54,900</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {data.analytics.totalTickets.toLocaleString()}
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-primary">+18.3%</span> from last year
+                  <span className="text-primary">
+                    +{data.analytics.ticketGrowth}%
+                  </span>{" "}
+                  from last year
                 </p>
               </CardContent>
             </Card>
@@ -325,9 +435,14 @@ export function MonthlyLottery() {
                 <CardTitle className="text-sm">Total Participants</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">2,100</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {data.analytics.totalParticipants.toLocaleString()}
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-primary">+15.2%</span> from last year
+                  <span className="text-primary">
+                    +{data.analytics.participantGrowth}%
+                  </span>{" "}
+                  from last year
                 </p>
               </CardContent>
             </Card>
@@ -336,9 +451,14 @@ export function MonthlyLottery() {
                 <CardTitle className="text-sm">Revenue Generated</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">5,490,000 ETB</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {Math.round(data.analytics.totalRevenue).toLocaleString()} ETB
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="text-primary">+18.3%</span> from last year
+                  <span className="text-primary">
+                    +{data.analytics.revenueGrowth}%
+                  </span>{" "}
+                  from last year
                 </p>
               </CardContent>
             </Card>
@@ -347,15 +467,27 @@ export function MonthlyLottery() {
           <Card>
             <CardHeader>
               <CardTitle>Monthly Sales & Participant Growth</CardTitle>
-              <CardDescription>Ticket sales and revenue for the last 6 months</CardDescription>
+              <CardDescription>
+                Ticket sales and revenue for the last 6 months
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ChartContainer config={chartConfig} className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={salesData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <AreaChart data={data.salesData}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="hsl(var(--border))"
+                    />
+                    <XAxis
+                      dataKey="month"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <YAxis
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Area
                       type="monotone"
@@ -376,7 +508,9 @@ export function MonthlyLottery() {
           <Card>
             <CardHeader>
               <CardTitle>Draw History</CardTitle>
-              <CardDescription>Past monthly draws with winners and prize splits</CardDescription>
+              <CardDescription>
+                Past monthly draws with winners and prize splits
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border">
@@ -392,14 +526,26 @@ export function MonthlyLottery() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {drawHistory.map((draw, index) => (
+                    {data.drawHistory.map((draw, index) => (
                       <TableRow key={index}>
-                        <TableCell className="font-medium">{draw.date}</TableCell>
-                        <TableCell className="text-sm">{draw.winner1}</TableCell>
-                        <TableCell className="text-sm">{draw.winner2}</TableCell>
-                        <TableCell className="text-sm">{draw.winner3}</TableCell>
-                        <TableCell className="font-semibold text-primary">{draw.totalPool}</TableCell>
-                        <TableCell className="text-muted-foreground">{draw.participants}</TableCell>
+                        <TableCell className="font-medium">
+                          {draw.date}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {draw.winner1}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {draw.winner2}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {draw.winner3}
+                        </TableCell>
+                        <TableCell className="font-semibold text-primary">
+                          {draw.totalPool}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {draw.participants.toLocaleString()}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -410,5 +556,5 @@ export function MonthlyLottery() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

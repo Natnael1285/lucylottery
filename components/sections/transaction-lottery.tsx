@@ -1,136 +1,206 @@
-"use client"
+// components/transaction-lottery.tsx
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { AlertCircle, CheckCircle, Trophy, Settings, History, Users, AlertTriangle } from "lucide-react"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
+  History,
+  Settings,
+  Trophy,
+  Users,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
-const participants = [
-  {
-    id: 1,
-    username: "user_8234",
-    account: "0912345678",
-    lotteryNumber: "123456789012",
-    transactionTime: "2025-09-29 14:23:45",
-    amount: "50 ETB",
-  },
-  {
-    id: 2,
-    username: "user_5621",
-    account: "0923456789",
-    lotteryNumber: "234567890123",
-    transactionTime: "2025-09-29 14:25:12",
-    amount: "100 ETB",
-  },
-  {
-    id: 3,
-    username: "user_9847",
-    account: "0934567890",
-    lotteryNumber: "345678901234",
-    transactionTime: "2025-09-29 14:27:33",
-    amount: "75 ETB",
-  },
-  {
-    id: 4,
-    username: "user_3421",
-    account: "0945678901",
-    lotteryNumber: "456789012345",
-    transactionTime: "2025-09-29 14:30:18",
-    amount: "200 ETB",
-  },
-  {
-    id: 5,
-    username: "user_7654",
-    account: "0956789012",
-    lotteryNumber: "567890123456",
-    transactionTime: "2025-09-29 14:32:55",
-    amount: "150 ETB",
-  },
-]
+interface Participant {
+  id: number;
+  username: string;
+  account: string;
+  lotteryNumber: string;
+  transactionTime: string;
+  amount: string;
+}
 
-const winners = [
-  {
-    position: "1st Place",
-    username: "user_4521",
-    lotteryNumber: "789012345678",
-    prize: "50,000 ETB",
-    date: "2025-09-29",
-  },
-  {
-    position: "2nd Place",
-    username: "user_8932",
-    lotteryNumber: "890123456789",
-    prize: "30,000 ETB",
-    date: "2025-09-29",
-  },
-  {
-    position: "3rd Place",
-    username: "user_2341",
-    lotteryNumber: "901234567890",
-    prize: "20,000 ETB",
-    date: "2025-09-29",
-  },
-]
+interface Winner {
+  position: string;
+  username: string;
+  lotteryNumber: string;
+  prize: string;
+  date: string;
+}
 
-const drawHistory = [
-  {
-    date: "2025-09-28",
-    winner1: "user_1234 (45,000 ETB)",
-    winner2: "user_5678 (27,000 ETB)",
-    winner3: "user_9012 (18,000 ETB)",
-    totalPool: "90,000 ETB",
-  },
-  {
-    date: "2025-09-27",
-    winner1: "user_3456 (48,000 ETB)",
-    winner2: "user_7890 (28,800 ETB)",
-    winner3: "user_2345 (19,200 ETB)",
-    totalPool: "96,000 ETB",
-  },
-  {
-    date: "2025-09-26",
-    winner1: "user_6789 (42,000 ETB)",
-    winner2: "user_0123 (25,200 ETB)",
-    winner3: "user_4567 (16,800 ETB)",
-    totalPool: "84,000 ETB",
-  },
-]
+interface DrawHistory {
+  date: string;
+  winner1: string;
+  winner2: string;
+  winner3: string;
+  totalPool: string;
+}
 
-const fraudAlerts = [
-  {
-    id: 1,
-    type: "Suspicious Pattern",
-    user: "user_9999",
-    description: "Multiple transactions from same IP",
-    severity: "high",
-    time: "10 mins ago",
-  },
-  {
-    id: 2,
-    type: "Failed Transaction",
-    user: "user_7777",
-    description: "Payment gateway timeout",
-    severity: "medium",
-    time: "25 mins ago",
-  },
-]
+interface FraudAlert {
+  id: number;
+  type: string;
+  user: string;
+  description: string;
+  severity: string;
+  time: string;
+}
+
+interface Settings {
+  govCut: string;
+  prize1: string;
+  prize2: string;
+  prize3: string;
+}
+
+interface ApiHealth {
+  telebirr: {
+    status: string;
+    lastChecked: string;
+  };
+  cbeBirr: {
+    status: string;
+    lastChecked: string;
+  };
+  failedTransactions: number;
+}
+
+interface ApiResponse {
+  participants: Participant[];
+  winners: Winner[];
+  drawHistory: DrawHistory[];
+  fraudAlerts: FraudAlert[];
+  settings: Settings;
+  apiHealth: ApiHealth;
+}
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export function TransactionLottery() {
-  const [govCut, setGovCut] = useState("15")
-  const [prize1, setPrize1] = useState("50")
-  const [prize2, setPrize2] = useState("30")
-  const [prize3, setPrize3] = useState("20")
+  const [data, setData] = useState<ApiResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [govCut, setGovCut] = useState("15");
+  const [prize1, setPrize1] = useState("50");
+  const [prize2, setPrize2] = useState("30");
+  const [prize3, setPrize3] = useState("20");
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${API_BASE_URL}/api/lucy/transaction-lottery`
+      );
+      const result = await response.json();
+      setData(result);
+
+      // Initialize form values with current settings
+      if (result.settings) {
+        setGovCut(result.settings.govCut);
+        setPrize1(result.settings.prize1);
+        setPrize2(result.settings.prize2);
+        setPrize3(result.settings.prize3);
+      }
+    } catch (error) {
+      console.error("Error fetching transaction lottery data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/lucy/transaction-lottery`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            govCut,
+            prize1,
+            prize2,
+            prize3,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        // Refresh data to get updated settings
+        fetchData();
+        alert("Settings saved successfully!");
+      } else {
+        alert("Failed to save settings");
+      }
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      alert("Error saving settings");
+    }
+  };
+
+  if (loading && !data) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            Transaction-Based Lottery
+          </h2>
+          <p className="text-muted-foreground">
+            Loading transaction lottery data...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            Transaction-Based Lottery
+          </h2>
+          <p className="text-muted-foreground">
+            Failed to load transaction lottery data
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">Transaction-Based Lottery</h2>
-        <p className="text-muted-foreground">Automatic deduction lottery system</p>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">
+          Transaction-Based Lottery
+        </h2>
+        <p className="text-muted-foreground">
+          Automatic deduction lottery system
+        </p>
       </div>
 
       <Tabs defaultValue="participants" className="space-y-4">
@@ -161,7 +231,9 @@ export function TransactionLottery() {
           <Card>
             <CardHeader>
               <CardTitle>Active Participants</CardTitle>
-              <CardDescription>Users automatically enrolled through transactions</CardDescription>
+              <CardDescription>
+                Users automatically enrolled through transactions
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border">
@@ -176,13 +248,21 @@ export function TransactionLottery() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {participants.map((participant) => (
+                    {data.participants.map((participant) => (
                       <TableRow key={participant.id}>
-                        <TableCell className="font-medium">{participant.username}</TableCell>
+                        <TableCell className="font-medium">
+                          {participant.username}
+                        </TableCell>
                         <TableCell>{participant.account}</TableCell>
-                        <TableCell className="font-mono text-primary">{participant.lotteryNumber}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{participant.transactionTime}</TableCell>
-                        <TableCell className="font-semibold">{participant.amount}</TableCell>
+                        <TableCell className="font-mono text-primary">
+                          {participant.lotteryNumber}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {participant.transactionTime}
+                        </TableCell>
+                        <TableCell className="font-semibold">
+                          {participant.amount}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -196,11 +276,13 @@ export function TransactionLottery() {
           <Card>
             <CardHeader>
               <CardTitle>Today's Winners</CardTitle>
-              <CardDescription>3 daily winners with prize breakdown</CardDescription>
+              <CardDescription>
+                3 daily winners with prize breakdown
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {winners.map((winner, index) => (
+                {data.winners.map((winner, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-card to-card/50"
@@ -211,21 +293,31 @@ export function TransactionLottery() {
                           index === 0
                             ? "bg-primary/20 text-primary"
                             : index === 1
-                              ? "bg-secondary/20 text-secondary"
-                              : "bg-accent/20 text-accent"
+                            ? "bg-secondary/20 text-secondary"
+                            : "bg-accent/20 text-accent"
                         }`}
                       >
                         <Trophy className="h-6 w-6" />
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground">{winner.position}</p>
-                        <p className="text-sm text-muted-foreground">{winner.username}</p>
-                        <p className="text-xs font-mono text-muted-foreground">{winner.lotteryNumber}</p>
+                        <p className="font-semibold text-foreground">
+                          {winner.position}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {winner.username}
+                        </p>
+                        <p className="text-xs font-mono text-muted-foreground">
+                          {winner.lotteryNumber}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">{winner.prize}</p>
-                      <p className="text-xs text-muted-foreground">{winner.date}</p>
+                      <p className="text-2xl font-bold text-primary">
+                        {winner.prize}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {winner.date}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -239,7 +331,9 @@ export function TransactionLottery() {
             <Card>
               <CardHeader>
                 <CardTitle>Government Cut</CardTitle>
-                <CardDescription>Set the percentage for government revenue</CardDescription>
+                <CardDescription>
+                  Set the percentage for government revenue
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -252,14 +346,18 @@ export function TransactionLottery() {
                     placeholder="15"
                   />
                 </div>
-                <Button className="w-full">Save Government Cut</Button>
+                <Button className="w-full" onClick={handleSaveSettings}>
+                  Save Government Cut
+                </Button>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle>Prize Pool Configuration</CardTitle>
-                <CardDescription>Configure prize distribution among 3 winners</CardDescription>
+                <CardDescription>
+                  Configure prize distribution among 3 winners
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -292,7 +390,9 @@ export function TransactionLottery() {
                     placeholder="20"
                   />
                 </div>
-                <Button className="w-full">Save Prize Configuration</Button>
+                <Button className="w-full" onClick={handleSaveSettings}>
+                  Save Prize Configuration
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -302,7 +402,9 @@ export function TransactionLottery() {
           <Card>
             <CardHeader>
               <CardTitle>Draw History</CardTitle>
-              <CardDescription>Past draws with winners and prize splits</CardDescription>
+              <CardDescription>
+                Past draws with winners and prize splits
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border">
@@ -317,13 +419,23 @@ export function TransactionLottery() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {drawHistory.map((draw, index) => (
+                    {data.drawHistory.map((draw, index) => (
                       <TableRow key={index}>
-                        <TableCell className="font-medium">{draw.date}</TableCell>
-                        <TableCell className="text-sm">{draw.winner1}</TableCell>
-                        <TableCell className="text-sm">{draw.winner2}</TableCell>
-                        <TableCell className="text-sm">{draw.winner3}</TableCell>
-                        <TableCell className="font-semibold text-primary">{draw.totalPool}</TableCell>
+                        <TableCell className="font-medium">
+                          {draw.date}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {draw.winner1}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {draw.winner2}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {draw.winner3}
+                        </TableCell>
+                        <TableCell className="font-semibold text-primary">
+                          {draw.totalPool}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -341,23 +453,42 @@ export function TransactionLottery() {
                   <AlertTriangle className="h-5 w-5 text-destructive" />
                   Fraud Alerts
                 </CardTitle>
-                <CardDescription>Suspicious activity and fraud detection</CardDescription>
+                <CardDescription>
+                  Suspicious activity and fraud detection
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {fraudAlerts.map((alert) => (
-                    <div key={alert.id} className="p-3 rounded-lg border bg-card/50">
+                  {data.fraudAlerts.map((alert) => (
+                    <div
+                      key={alert.id}
+                      className="p-3 rounded-lg border bg-card/50"
+                    >
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <p className="font-semibold text-sm text-foreground">{alert.type}</p>
-                          <p className="text-xs text-muted-foreground">{alert.user}</p>
+                          <p className="font-semibold text-sm text-foreground">
+                            {alert.type}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {alert.user}
+                          </p>
                         </div>
-                        <Badge variant={alert.severity === "high" ? "destructive" : "secondary"}>
+                        <Badge
+                          variant={
+                            alert.severity === "high"
+                              ? "destructive"
+                              : "secondary"
+                          }
+                        >
                           {alert.severity}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">{alert.description}</p>
-                      <p className="text-xs text-muted-foreground mt-2">{alert.time}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {alert.description}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {alert.time}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -377,23 +508,49 @@ export function TransactionLottery() {
                   <div className="flex items-center justify-between p-3 rounded-lg border">
                     <div>
                       <p className="font-semibold text-sm">Telebirr API</p>
-                      <p className="text-xs text-muted-foreground">Last checked: 2 mins ago</p>
+                      <p className="text-xs text-muted-foreground">
+                        Last checked: {data.apiHealth.telebirr.lastChecked}
+                      </p>
                     </div>
-                    <Badge className="bg-green-500/20 text-green-500">Healthy</Badge>
+                    <Badge
+                      className={`${
+                        data.apiHealth.telebirr.status === "Healthy"
+                          ? "bg-green-500/20 text-green-500"
+                          : "bg-yellow-500/20 text-yellow-500"
+                      }`}
+                    >
+                      {data.apiHealth.telebirr.status}
+                    </Badge>
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-lg border">
                     <div>
                       <p className="font-semibold text-sm">CBEbirr API</p>
-                      <p className="text-xs text-muted-foreground">Last checked: 3 mins ago</p>
+                      <p className="text-xs text-muted-foreground">
+                        Last checked: {data.apiHealth.cbeBirr.lastChecked}
+                      </p>
                     </div>
-                    <Badge className="bg-green-500/20 text-green-500">Healthy</Badge>
+                    <Badge
+                      className={`${
+                        data.apiHealth.cbeBirr.status === "Healthy"
+                          ? "bg-green-500/20 text-green-500"
+                          : "bg-yellow-500/20 text-yellow-500"
+                      }`}
+                    >
+                      {data.apiHealth.cbeBirr.status}
+                    </Badge>
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-lg border">
                     <div>
-                      <p className="font-semibold text-sm">Failed Transactions</p>
-                      <p className="text-xs text-muted-foreground">Last 24 hours</p>
+                      <p className="font-semibold text-sm">
+                        Failed Transactions
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Last 24 hours
+                      </p>
                     </div>
-                    <span className="text-lg font-bold text-foreground">12</span>
+                    <span className="text-lg font-bold text-foreground">
+                      {data.apiHealth.failedTransactions}
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -402,5 +559,5 @@ export function TransactionLottery() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
