@@ -1,43 +1,45 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import {
-  LayoutDashboard,
-  Ticket,
-  DollarSign,
-  Activity,
-  FileText,
-  Search,
-  Bell,
-  Menu,
-  X,
-  User,
-  LogOut,
-  Building2,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { ThemeToggle } from "@/components/theme-toggle"
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Activity,
+  Bell,
+  Building2,
+  DollarSign,
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Search,
+  Ticket,
+  Trophy,
+  User,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface DashboardLayoutProps {
-  children: React.ReactNode
-  activeSection: string
-  onSectionChange: (section: string) => void
+  children: React.ReactNode;
+  activeSection: string;
+  onSectionChange: (section: string) => void;
 }
 
+// Update the navigationItems array in dashboard-layout.tsx
 const navigationItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "transaction-lottery", label: "Transaction-Based Lot", icon: Activity },
@@ -46,18 +48,23 @@ const navigationItems = [
   { id: "monthly-lottery", label: "Monthly Lot", icon: Ticket },
   { id: "financials", label: "Financials", icon: DollarSign },
   { id: "institutions", label: "Institution Management", icon: Building2 },
+  { id: "select-winner", label: "Select Winner", icon: Trophy }, // Add this line
   { id: "settings", label: "Settings", icon: FileText },
-]
+];
 
-export function DashboardLayout({ children, activeSection, onSectionChange }: DashboardLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [notifications] = useState(3)
-  const router = useRouter()
+export function DashboardLayout({
+  children,
+  activeSection,
+  onSectionChange,
+}: DashboardLayoutProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notifications] = useState(3);
+  const router = useRouter();
 
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated")
-    router.push("/login")
-  }
+    localStorage.removeItem("isAuthenticated");
+    router.push("/login");
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -65,9 +72,17 @@ export function DashboardLayout({ children, activeSection, onSectionChange }: Da
       <aside className="hidden lg:flex lg:flex-col lg:w-64 bg-card border-r border-border">
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <Image src="/logo.png" alt="Lucy Lottery" width={48} height={48} className="rounded-full" />
+            <Image
+              src="/logo.png"
+              alt="Lucy Lottery"
+              width={48}
+              height={48}
+              className="rounded-full"
+            />
             <div>
-              <h1 className="text-lg font-bold text-foreground">Lucy Lottery</h1>
+              <h1 className="text-lg font-bold text-foreground">
+                Lucy Lottery
+              </h1>
               <p className="text-xs text-muted-foreground">Admin Dashboard</p>
             </div>
           </div>
@@ -75,8 +90,8 @@ export function DashboardLayout({ children, activeSection, onSectionChange }: Da
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navigationItems.map((item) => {
-            const Icon = item.icon
-            const isActive = activeSection === item.id
+            const Icon = item.icon;
+            const isActive = activeSection === item.id;
             return (
               <Button
                 key={item.id}
@@ -91,7 +106,7 @@ export function DashboardLayout({ children, activeSection, onSectionChange }: Da
                 <Icon className="h-5 w-5" />
                 <span>{item.label}</span>
               </Button>
-            )
+            );
           })}
         </nav>
       </aside>
@@ -116,21 +131,35 @@ export function DashboardLayout({ children, activeSection, onSectionChange }: Da
             >
               <div className="p-6 border-b border-border flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Image src="/logo.png" alt="Lucy Lottery" width={48} height={48} className="rounded-full" />
+                  <Image
+                    src="/logo.png"
+                    alt="Lucy Lottery"
+                    width={48}
+                    height={48}
+                    className="rounded-full"
+                  />
                   <div>
-                    <h1 className="text-lg font-bold text-foreground">Lucy Lottery</h1>
-                    <p className="text-xs text-muted-foreground">Admin Dashboard</p>
+                    <h1 className="text-lg font-bold text-foreground">
+                      Lucy Lottery
+                    </h1>
+                    <p className="text-xs text-muted-foreground">
+                      Admin Dashboard
+                    </p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarOpen(false)}
+                >
                   <X className="h-5 w-5" />
                 </Button>
               </div>
 
               <nav className="p-4 space-y-2">
                 {navigationItems.map((item) => {
-                  const Icon = item.icon
-                  const isActive = activeSection === item.id
+                  const Icon = item.icon;
+                  const isActive = activeSection === item.id;
                   return (
                     <Button
                       key={item.id}
@@ -141,14 +170,14 @@ export function DashboardLayout({ children, activeSection, onSectionChange }: Da
                           : "text-foreground hover:bg-accent"
                       }`}
                       onClick={() => {
-                        onSectionChange(item.id)
-                        setSidebarOpen(false)
+                        onSectionChange(item.id);
+                        setSidebarOpen(false);
                       }}
                     >
                       <Icon className="h-5 w-5" />
                       <span>{item.label}</span>
                     </Button>
-                  )
+                  );
                 })}
               </nav>
             </motion.aside>
@@ -161,7 +190,12 @@ export function DashboardLayout({ children, activeSection, onSectionChange }: Da
         {/* Top bar */}
         <header className="h-16 border-b border-border bg-card px-4 lg:px-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
               <Menu className="h-5 w-5" />
             </Button>
 
@@ -191,19 +225,25 @@ export function DashboardLayout({ children, activeSection, onSectionChange }: Da
                 <DropdownMenuItem>
                   <div className="flex flex-col gap-1">
                     <p className="font-medium text-sm">New winner approved</p>
-                    <p className="text-xs text-muted-foreground">Prize disbursement pending</p>
+                    <p className="text-xs text-muted-foreground">
+                      Prize disbursement pending
+                    </p>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <div className="flex flex-col gap-1">
                     <p className="font-medium text-sm">System alert</p>
-                    <p className="text-xs text-muted-foreground">High transaction volume detected</p>
+                    <p className="text-xs text-muted-foreground">
+                      High transaction volume detected
+                    </p>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <div className="flex flex-col gap-1">
                     <p className="font-medium text-sm">Daily draw completed</p>
-                    <p className="text-xs text-muted-foreground">View results and winners</p>
+                    <p className="text-xs text-muted-foreground">
+                      View results and winners
+                    </p>
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -222,7 +262,9 @@ export function DashboardLayout({ children, activeSection, onSectionChange }: Da
                   </div>
                   <div className="flex flex-col">
                     <p className="text-sm font-medium">Admin User</p>
-                    <p className="text-xs text-muted-foreground">admin@lucylottery.com</p>
+                    <p className="text-xs text-muted-foreground">
+                      admin@lucylottery.com
+                    </p>
                   </div>
                 </div>
                 <DropdownMenuSeparator />
@@ -251,5 +293,5 @@ export function DashboardLayout({ children, activeSection, onSectionChange }: Da
         </main>
       </div>
     </div>
-  )
+  );
 }
